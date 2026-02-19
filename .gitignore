@@ -1,0 +1,30 @@
+bpg-proxmox
+# -----------------------------
+# Terraform state (NEVER commit)
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.backup
+# -----------------------------
+# Terraform working directory
+.terraform/
+# -----------------------------
+# Terraform variable files (may contain secrets)
+*.tfvars
+*.tfvars.json
+# -----------------------------
+# Terraform crash logs
+crash.log
+crash.*.log
+# -----------------------------
+# Sensitive environment files
+.env
+.env.*
+# -----------------------------
+# OS / editor junk
+.DS_Store
+Thumbs.db
+# -----------------------------
+# Optional: lock file
+.terraform.lock.hcl
+# -----------------------------
