@@ -8,18 +8,10 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
   vm_id     = 175
   name      = "jellyfin-samba"
 
-  initialization {
-    ip_config {
-      ipv4 {
-        address = "192.168.0.175/24" # include /24
-        gateway = "192.168.0.1"      # do not include /24
-      }
-    }
+  # network info configured inside the VM
 
-    dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"] #DNS server
-    }
+  startup {
+    order = 18
   }
 
   agent {
@@ -81,18 +73,10 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
   vm_id     = 184
   name      = "homeassistant"
 
-  initialization {
-    ip_config {
-      ipv4 {
-        address = "192.168.0.184/24" # include /24
-        gateway = "192.168.0.1"      # do not include /24
-      }
-    }
+  # network info configured inside the VM
 
-    dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"] #DNS server
-    }
+  startup {
+    order = 19
   }
 
   agent {
