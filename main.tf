@@ -4,9 +4,11 @@
 # ----------------------------Jellyfin and Samba Server---------------------------------------
 
 resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
-  node_name = "pve1"
-  vm_id     = 175
-  name      = "jellyfin-samba"
+  node_name       = "pve1"
+  vm_id           = 175
+  name            = "jellyfin-samba"
+  keyboard_layout = "en-us"
+  description     = "You also have iperf installed on this VM."
 
   # network info configured inside the VM
 
@@ -16,6 +18,7 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
 
   agent {
     enabled = true
+    type    = "virtio"
   }
 
   operating_system {
@@ -30,15 +33,30 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
 
   memory {
     dedicated = 2560
+    floating  = 1024
   }
 
   scsi_hardware = "virtio-scsi-single"
   boot_order    = ["scsi0", "ide2", "net0"]
 
   disk {
-    datastore_id = "VM-Disks"
+    datastore_id = "local-lvm"
     interface    = "scsi0"
     size         = 30
+    discard      = "on"
+    iothread     = true
+  }
+
+  disk {
+    interface         = "scsi1"
+    path_in_datastore = "/dev/disk/by-id/ata-TOSHIBA_HDWD130_584M35XAS"
+    backup            = false
+  }
+
+  disk {
+    interface         = "scsi2"
+    path_in_datastore = "/dev/disk/by-id/ata-TOSHIBA_HDWD130_584M33WAS"
+    backup            = false
   }
 
   cdrom {
@@ -50,7 +68,7 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
     bridge      = "vmbr0"
     mac_address = "BC:24:11:1D:40:9C"
     model       = "virtio"
-    firewall    = true #should this be?
+    firewall    = true
   }
 
   on_boot       = true
@@ -63,6 +81,13 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
 
   smbios {
     uuid = "3de28b5a-aef3-4856-9aee-6627dd298b32"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      disk[1], # ignoring my passed-through drive
+      disk[2], # ignoring my passed-through drive
+    ]
   }
 }
 
@@ -122,7 +147,7 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     bridge      = "vmbr0"
     mac_address = "BC:24:11:00:F1:97"
     model       = "virtio"
-    firewall    = true #should this be?
+    firewall    = true
   }
 
   on_boot       = true
@@ -433,7 +458,7 @@ resource "proxmox_virtual_environment_container" "mariadb" {
 
   memory {
     dedicated = 512
-    swap      = 0 # double checked that it should be set to 0 if no swap
+    swap      = 0
   }
 
   network_interface {
@@ -496,7 +521,7 @@ resource "proxmox_virtual_environment_container" "nginx" {
 
   memory {
     dedicated = 384
-    swap      = 0 # double checked that it should be set to 0 if no swap
+    swap      = 0
   }
 
   network_interface {
