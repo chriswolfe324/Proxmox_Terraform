@@ -4,7 +4,7 @@
 # ----------------------------Jellyfin and Samba Server---------------------------------------
 
 resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
-  node_name       = "pve1"
+  node_name       = var.node_name
   vm_id           = 175
   name            = "jellyfin-samba"
   keyboard_layout = "en-us"
@@ -65,7 +65,7 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
   }
 
   network_device {
-    bridge      = "vmbr0"
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:1D:40:9C"
     model       = "virtio"
     firewall    = true
@@ -94,7 +94,7 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
 # ---------------------------Home Assistant Server----------------------------------------
 
 resource "proxmox_virtual_environment_vm" "home_assistant" {
-  node_name = "pve1"
+  node_name = var.node_name
   vm_id     = 184
   name      = "homeassistant"
 
@@ -144,7 +144,7 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
   }
 
   network_device {
-    bridge      = "vmbr0"
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:00:F1:97"
     model       = "virtio"
     firewall    = true
@@ -166,7 +166,7 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
 # ----------------------------Pi-Hole Container---------------------------------------
 
 resource "proxmox_virtual_environment_container" "pihole" {
-  node_name    = "pve1"
+  node_name    = var.node_name
   vm_id        = 180
   unprivileged = true
   started      = true
@@ -189,13 +189,13 @@ resource "proxmox_virtual_environment_container" "pihole" {
     ip_config {
       ipv4 {
         address = "192.168.0.180/24" # include /24
-        gateway = "192.168.0.1"      # do not include /24
+        gateway = var.default_gateway
       }
     }
 
     dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"] #DNS server
+      domain  = var.domain_name
+      servers = var.dns_servers #DNS server
     }
   }
 
@@ -205,8 +205,8 @@ resource "proxmox_virtual_environment_container" "pihole" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
+    name        = var.network_interface_name
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:1F:1D:82"
     firewall    = true
   }
@@ -231,7 +231,7 @@ resource "proxmox_virtual_environment_container" "pihole" {
 # ------------------------------Book-lecture-app Container-------------------------------------
 
 resource "proxmox_virtual_environment_container" "book-lecture-app" {
-  node_name    = "pve1"
+  node_name    = var.node_name
   vm_id        = 181
   unprivileged = true
   started      = true
@@ -254,12 +254,12 @@ resource "proxmox_virtual_environment_container" "book-lecture-app" {
     ip_config {
       ipv4 {
         address = "192.168.0.181/24" # include /24
-        gateway = "192.168.0.1"      # do not include /24
+        gateway = var.default_gateway
       }
     }
     dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"] #DNS server
+      domain  = var.domain_name
+      servers = var.dns_servers #DNS server
     }
   }
 
@@ -269,8 +269,8 @@ resource "proxmox_virtual_environment_container" "book-lecture-app" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
+    name        = var.network_interface_name
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:B5:C9:80"
     firewall    = true
   }
@@ -294,7 +294,7 @@ resource "proxmox_virtual_environment_container" "book-lecture-app" {
 # ------------------------------MongoDB Container-------------------------------------
 
 resource "proxmox_virtual_environment_container" "mongoDB" {
-  node_name    = "pve1"
+  node_name    = var.node_name
   vm_id        = 182
   unprivileged = true
   started      = true
@@ -317,12 +317,12 @@ resource "proxmox_virtual_environment_container" "mongoDB" {
     ip_config {
       ipv4 {
         address = "192.168.0.182/24" #include the /24
-        gateway = "192.168.0.1"      #Do not include /24
+        gateway = var.default_gateway
       }
     }
     dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"]
+      domain  = var.domain_name
+      servers = var.dns_servers
     }
   }
 
@@ -338,8 +338,8 @@ resource "proxmox_virtual_environment_container" "mongoDB" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
+    name        = var.network_interface_name
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:28:26:A4"
     firewall    = true
   }
@@ -363,7 +363,7 @@ resource "proxmox_virtual_environment_container" "mongoDB" {
 # ----------------------------Bookstack Container---------------------------------------
 
 resource "proxmox_virtual_environment_container" "bookstack" {
-  node_name    = "pve1"
+  node_name    = var.node_name
   vm_id        = 183
   unprivileged = true
   started      = true
@@ -386,7 +386,7 @@ resource "proxmox_virtual_environment_container" "bookstack" {
     ip_config {
       ipv4 {
         address = "192.168.0.183/24" #include /24
-        gateway = "192.168.0.1"      # Do not include /24
+        gateway = var.default_gateway
       }
     }
     #domain and DNS servers are set to use the host value
@@ -399,8 +399,8 @@ resource "proxmox_virtual_environment_container" "bookstack" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
+    name        = var.network_interface_name
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:2C:4A:23"
     firewall    = true
   }
@@ -424,7 +424,7 @@ resource "proxmox_virtual_environment_container" "bookstack" {
 # -----------------------------MariaDB--------------------------------------
 
 resource "proxmox_virtual_environment_container" "mariadb" {
-  node_name    = "pve1"
+  node_name    = var.node_name
   vm_id        = 186
   unprivileged = true
   started      = true
@@ -447,12 +447,12 @@ resource "proxmox_virtual_environment_container" "mariadb" {
     ip_config {
       ipv4 {
         address = "192.168.0.186/24" #include /24
-        gateway = "192.168.0.1"      # do not include /24
+        gateway = var.default_gateway
       }
     }
     dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"] #DNS server
+      domain  = var.domain_name
+      servers = var.dns_servers #DNS server
     }
   }
 
@@ -462,8 +462,8 @@ resource "proxmox_virtual_environment_container" "mariadb" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
+    name        = var.network_interface_name
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:F9:27:EC"
     firewall    = true
   }
@@ -487,7 +487,7 @@ resource "proxmox_virtual_environment_container" "mariadb" {
 # ----------------------------nginx Container---------------------------------------
 
 resource "proxmox_virtual_environment_container" "nginx" {
-  node_name    = "pve1"
+  node_name    = var.node_name
   vm_id        = 187
   unprivileged = true
   started      = true
@@ -510,12 +510,12 @@ resource "proxmox_virtual_environment_container" "nginx" {
     ip_config {
       ipv4 {
         address = "192.168.0.187/24" #include /24
-        gateway = "192.168.0.1"      # do not inlude /24?
+        gateway = var.default_gateway
       }
     }
     dns {
-      domain  = "chriswolfe.rocks"
-      servers = ["192.168.0.180"] #DNS server
+      domain  = var.domain_name
+      servers = var.dns_servers #DNS server
     }
   }
 
@@ -525,8 +525,8 @@ resource "proxmox_virtual_environment_container" "nginx" {
   }
 
   network_interface {
-    name        = "eth0"
-    bridge      = "vmbr0"
+    name        = var.network_interface_name
+    bridge      = var.network_interface_bridge
     mac_address = "BC:24:11:F7:11:B0"
     firewall    = true
   }
