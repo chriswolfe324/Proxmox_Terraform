@@ -5,15 +5,15 @@
 
 resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
   node_name       = var.node_name
-  vm_id           = 175
-  name            = "jellyfin-samba"
+  vm_id           = var.jellyfin_samba_vm_id
+  name            = var.jellyfin_samba_hostname
   keyboard_layout = "en-us"
   description     = "You also have iperf installed on this VM."
 
   # network info configured inside the VM
 
   startup {
-    order = 18
+    order = var.jellyfin_samba_startup_order
   }
 
   agent {
@@ -66,7 +66,7 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
 
   network_device {
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:1D:40:9C"
+    mac_address = var.jellyfin_samba_mac_address
     model       = "virtio"
     firewall    = true
   }
@@ -95,13 +95,13 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
 
 resource "proxmox_virtual_environment_vm" "home_assistant" {
   node_name = var.node_name
-  vm_id     = 184
-  name      = "homeassistant"
+  vm_id     = var.home_assistant_vm_id
+  name      = var.home_assistant_hostname
 
   # network info configured inside the VM
 
   startup {
-    order = 19
+    order = var.home_assistant_startup_order
   }
 
   agent {
@@ -145,7 +145,7 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
 
   network_device {
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:00:F1:97"
+    mac_address = var.home_assistant_mac_address
     model       = "virtio"
     firewall    = true
   }
@@ -167,7 +167,7 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
 
 resource "proxmox_virtual_environment_container" "pihole" {
   node_name    = var.node_name
-  vm_id        = 180
+  vm_id        = var.pihole_vm_id
   unprivileged = true
   started      = true
   protection   = false
@@ -184,11 +184,11 @@ resource "proxmox_virtual_environment_container" "pihole" {
   }
 
   initialization {
-    hostname = "pi-hole"
+    hostname = var.pihole_hostname
 
     ip_config {
       ipv4 {
-        address = "192.168.0.180/24" # include /24
+        address = var.pihole_ip_address
         gateway = var.default_gateway
       }
     }
@@ -207,12 +207,12 @@ resource "proxmox_virtual_environment_container" "pihole" {
   network_interface {
     name        = var.network_interface_name
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:1F:1D:82"
+    mac_address = var.pihole_mac_address
     firewall    = true
   }
 
   startup {
-    order = 1
+    order = var.pihole_startup_order
   }
 
   lifecycle {
@@ -232,7 +232,7 @@ resource "proxmox_virtual_environment_container" "pihole" {
 
 resource "proxmox_virtual_environment_container" "book-lecture-app" {
   node_name    = var.node_name
-  vm_id        = 181
+  vm_id        = var.book_lecture_vm_id
   unprivileged = true
   started      = true
   protection   = false
@@ -249,11 +249,11 @@ resource "proxmox_virtual_environment_container" "book-lecture-app" {
   }
 
   initialization {
-    hostname = "book-lecture-ap"
+    hostname = var.book_lecture_hostname
 
     ip_config {
       ipv4 {
-        address = "192.168.0.181/24" # include /24
+        address = var.book_lecture_ip_address
         gateway = var.default_gateway
       }
     }
@@ -271,12 +271,12 @@ resource "proxmox_virtual_environment_container" "book-lecture-app" {
   network_interface {
     name        = var.network_interface_name
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:B5:C9:80"
+    mac_address = var.book_lecture_mac_address
     firewall    = true
   }
 
   startup {
-    order = 4
+    order = var.book_lecture_startup_order
   }
 
   lifecycle {
@@ -295,7 +295,7 @@ resource "proxmox_virtual_environment_container" "book-lecture-app" {
 
 resource "proxmox_virtual_environment_container" "mongoDB" {
   node_name    = var.node_name
-  vm_id        = 182
+  vm_id        = var.mongodb_vm_id
   unprivileged = true
   started      = true
   protection   = false
@@ -312,11 +312,11 @@ resource "proxmox_virtual_environment_container" "mongoDB" {
   }
 
   initialization {
-    hostname = "MongoDB"
+    hostname = var.mongodb_hostname
 
     ip_config {
       ipv4 {
-        address = "192.168.0.182/24" #include the /24
+        address = var.mongodb_ip_address
         gateway = var.default_gateway
       }
     }
@@ -340,12 +340,12 @@ resource "proxmox_virtual_environment_container" "mongoDB" {
   network_interface {
     name        = var.network_interface_name
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:28:26:A4"
+    mac_address = var.mongodb_mac_address
     firewall    = true
   }
 
   startup {
-    order = 2
+    order = var.mongodb_startup_order
   }
 
   lifecycle {
@@ -364,7 +364,7 @@ resource "proxmox_virtual_environment_container" "mongoDB" {
 
 resource "proxmox_virtual_environment_container" "bookstack" {
   node_name    = var.node_name
-  vm_id        = 183
+  vm_id        = var.bookstack_vm_id
   unprivileged = true
   started      = true
   protection   = false
@@ -381,11 +381,11 @@ resource "proxmox_virtual_environment_container" "bookstack" {
   }
 
   initialization {
-    hostname = "bookstack"
+    hostname = var.bookstack_hostname
 
     ip_config {
       ipv4 {
-        address = "192.168.0.183/24" #include /24
+        address = var.bookstack_ip_address
         gateway = var.default_gateway
       }
     }
@@ -401,12 +401,12 @@ resource "proxmox_virtual_environment_container" "bookstack" {
   network_interface {
     name        = var.network_interface_name
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:2C:4A:23"
+    mac_address = var.bookstack_mac_address
     firewall    = true
   }
 
   startup {
-    order = 5
+    order = var.bookstack_startup_order
   }
 
   lifecycle {
@@ -425,7 +425,7 @@ resource "proxmox_virtual_environment_container" "bookstack" {
 
 resource "proxmox_virtual_environment_container" "mariadb" {
   node_name    = var.node_name
-  vm_id        = 186
+  vm_id        = var.mariadb_vm_id
   unprivileged = true
   started      = true
   protection   = false
@@ -442,11 +442,11 @@ resource "proxmox_virtual_environment_container" "mariadb" {
   }
 
   initialization {
-    hostname = "mariadb"
+    hostname = var.mariadb_hostname
 
     ip_config {
       ipv4 {
-        address = "192.168.0.186/24" #include /24
+        address = var.mariadb_ip_address
         gateway = var.default_gateway
       }
     }
@@ -464,12 +464,12 @@ resource "proxmox_virtual_environment_container" "mariadb" {
   network_interface {
     name        = var.network_interface_name
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:F9:27:EC"
+    mac_address = var.mariadb_mac_address
     firewall    = true
   }
 
   startup {
-    order = 3
+    order = var.mariadb_startup_order
   }
 
   lifecycle {
@@ -488,7 +488,7 @@ resource "proxmox_virtual_environment_container" "mariadb" {
 
 resource "proxmox_virtual_environment_container" "nginx" {
   node_name    = var.node_name
-  vm_id        = 187
+  vm_id        = var.nginx_vm_id
   unprivileged = true
   started      = true
   protection   = false
@@ -505,11 +505,11 @@ resource "proxmox_virtual_environment_container" "nginx" {
   }
 
   initialization {
-    hostname = "nginx"
+    hostname = var.nginx_hostname
 
     ip_config {
       ipv4 {
-        address = "192.168.0.187/24" #include /24
+        address = var.nginx_ip_address
         gateway = var.default_gateway
       }
     }
@@ -527,12 +527,12 @@ resource "proxmox_virtual_environment_container" "nginx" {
   network_interface {
     name        = var.network_interface_name
     bridge      = var.network_interface_bridge
-    mac_address = "BC:24:11:F7:11:B0"
+    mac_address = var.nginx_mac_address
     firewall    = true
   }
 
   startup {
-    order = 20
+    order = var.nginx_startup_order
   }
 
   lifecycle {
