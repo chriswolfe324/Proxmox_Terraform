@@ -2,7 +2,6 @@
 # until you decide to set up the firewall later
 
 # ----------------------------Jellyfin and Samba Server---------------------------------------
-
 resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
   node_name       = var.node_name
   vm_id           = var.jellyfin_samba_vm_id
@@ -90,9 +89,7 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
     ]
   }
 }
-
 # ---------------------------Home Assistant Server----------------------------------------
-
 resource "proxmox_virtual_environment_vm" "home_assistant" {
   node_name = var.node_name
   vm_id     = var.home_assistant_vm_id
@@ -162,387 +159,199 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
     uuid = "8db76472-6fd0-45dd-a950-6e963b283f7c"
   }
 }
-
 # ----------------------------Pi-Hole Container---------------------------------------
+module "pihole" {
+  source = "./modules/lxc_container"
 
-resource "proxmox_virtual_environment_container" "pihole" {
-  node_name    = var.node_name
-  vm_id        = var.pihole_vm_id
-  unprivileged = true
-  started      = true
-  protection   = false
-
-  console {
-    enabled   = true
-    tty_count = 2
-    type      = "tty"
+  providers = {
+    proxmox = proxmox
   }
 
-  disk {
-    datastore_id = "VM-Disks"
-    size         = 6
-  }
+  node_name = var.node_name
 
-  initialization {
-    hostname = var.pihole_hostname
+  vm_id    = var.pihole_vm_id
+  hostname = var.pihole_hostname
 
-    ip_config {
-      ipv4 {
-        address = var.pihole_ip_address
-        gateway = var.default_gateway
-      }
-    }
+  ipv4_address = var.pihole_ip_address
+  gateway      = var.default_gateway
 
-    dns {
-      domain  = var.domain_name
-      servers = var.dns_servers #DNS server
-    }
-  }
+  network_interface_name   = var.network_interface_name
+  network_interface_bridge = var.network_interface_bridge
+  mac_address              = var.pihole_mac_address
 
-  memory {
-    dedicated = 1024
-    swap      = 512
-  }
+  startup_order = var.pihole_startup_order
 
-  network_interface {
-    name        = var.network_interface_name
-    bridge      = var.network_interface_bridge
-    mac_address = var.pihole_mac_address
-    firewall    = true
-  }
+  disk_datastore_id = "VM-Disks"
+  disk_size         = 6
 
-  startup {
-    order = var.pihole_startup_order
-  }
+  memory_dedicated = 1024
+  memory_swap      = 512
 
-  lifecycle {
-    ignore_changes = [
-      operating_system,
-      start_on_boot,
-      timeout_clone,
-      timeout_create,
-      timeout_delete,
-      timeout_update,
-    ]
-  }
-
+  enable_dns  = true
+  dns_domain  = var.domain_name
+  dns_servers = var.dns_servers
 }
-
 # ------------------------------Book-lecture-app Container-------------------------------------
+module "book_lecture_app" {
+  source = "./modules/lxc_container"
 
-resource "proxmox_virtual_environment_container" "book-lecture-app" {
-  node_name    = var.node_name
-  vm_id        = var.book_lecture_vm_id
-  unprivileged = true
-  started      = true
-  protection   = false
-
-  console {
-    enabled   = true
-    tty_count = 2
-    type      = "tty"
+  providers = {
+    proxmox = proxmox
   }
 
-  disk {
-    datastore_id = "VM-Disks"
-    size         = 12
-  }
+  node_name = var.node_name
 
-  initialization {
-    hostname = var.book_lecture_hostname
+  vm_id    = var.book_lecture_vm_id
+  hostname = var.book_lecture_hostname
 
-    ip_config {
-      ipv4 {
-        address = var.book_lecture_ip_address
-        gateway = var.default_gateway
-      }
-    }
-    dns {
-      domain  = var.domain_name
-      servers = var.dns_servers #DNS server
-    }
-  }
+  ipv4_address = var.book_lecture_ip_address
+  gateway      = var.default_gateway
 
-  memory {
-    dedicated = 1024
-    swap      = 512
-  }
+  network_interface_name   = var.network_interface_name
+  network_interface_bridge = var.network_interface_bridge
+  mac_address              = var.book_lecture_mac_address
 
-  network_interface {
-    name        = var.network_interface_name
-    bridge      = var.network_interface_bridge
-    mac_address = var.book_lecture_mac_address
-    firewall    = true
-  }
+  startup_order = var.book_lecture_startup_order
 
-  startup {
-    order = var.book_lecture_startup_order
-  }
+  disk_datastore_id = "VM-Disks"
+  disk_size         = 12
 
-  lifecycle {
-    ignore_changes = [
-      operating_system,
-      start_on_boot,
-      timeout_clone,
-      timeout_create,
-      timeout_delete,
-      timeout_update,
-    ]
-  }
+  memory_dedicated = 1024
+  memory_swap      = 512
 
+  enable_dns  = true
+  dns_domain  = var.domain_name
+  dns_servers = var.dns_servers
 }
 # ------------------------------MongoDB Container-------------------------------------
+module "mongoDB" {
+  source = "./modules/lxc_container"
 
-resource "proxmox_virtual_environment_container" "mongoDB" {
-  node_name    = var.node_name
-  vm_id        = var.mongodb_vm_id
-  unprivileged = true
-  started      = true
-  protection   = false
-
-  console {
-    enabled   = true
-    tty_count = 2
-    type      = "tty"
+  providers = {
+    proxmox = proxmox
   }
 
-  disk {
-    datastore_id = "VM-Disks"
-    size         = 20
-  }
+  node_name = var.node_name
 
-  initialization {
-    hostname = var.mongodb_hostname
+  vm_id    = var.mongodb_vm_id
+  hostname = var.mongodb_hostname
 
-    ip_config {
-      ipv4 {
-        address = var.mongodb_ip_address
-        gateway = var.default_gateway
-      }
-    }
-    dns {
-      domain  = var.domain_name
-      servers = var.dns_servers
-    }
-  }
+  ipv4_address = var.mongodb_ip_address
+  gateway      = var.default_gateway
 
-  cpu {
-    architecture = "amd64"
-    cores        = 2
-    units        = 1024
-  }
+  network_interface_name   = var.network_interface_name
+  network_interface_bridge = var.network_interface_bridge
+  mac_address              = var.mongodb_mac_address
 
-  memory {
-    dedicated = 2048
-    swap      = 512
-  }
+  startup_order = var.mongodb_startup_order
 
-  network_interface {
-    name        = var.network_interface_name
-    bridge      = var.network_interface_bridge
-    mac_address = var.mongodb_mac_address
-    firewall    = true
-  }
+  enable_cpu       = true
+  cpu_architecture = "amd64"
+  cpu_cores        = 2
+  cpu_units        = 1024
 
-  startup {
-    order = var.mongodb_startup_order
-  }
+  disk_datastore_id = "VM-Disks"
+  disk_size         = 20
 
-  lifecycle {
-    ignore_changes = [
-      operating_system,
-      start_on_boot,
-      timeout_clone,
-      timeout_create,
-      timeout_delete,
-      timeout_update,
-    ]
-  }
+  memory_dedicated = 2048
+  memory_swap      = 512
+
+  enable_dns  = true
+  dns_domain  = var.domain_name
+  dns_servers = var.dns_servers
 }
-
 # ----------------------------Bookstack Container---------------------------------------
+module "bookstack" {
+  source = "./modules/lxc_container"
 
-resource "proxmox_virtual_environment_container" "bookstack" {
-  node_name    = var.node_name
-  vm_id        = var.bookstack_vm_id
-  unprivileged = true
-  started      = true
-  protection   = false
-
-  console {
-    enabled   = true
-    tty_count = 2
-    type      = "tty"
+  providers = {
+    proxmox = proxmox
   }
 
-  disk {
-    datastore_id = "VM-Disks"
-    size         = 20
-  }
+  node_name = var.node_name
 
-  initialization {
-    hostname = var.bookstack_hostname
+  vm_id    = var.bookstack_vm_id
+  hostname = var.bookstack_hostname
 
-    ip_config {
-      ipv4 {
-        address = var.bookstack_ip_address
-        gateway = var.default_gateway
-      }
-    }
-    #domain and DNS servers are set to use the host value
-    # so I omitted the DNS block
-  }
+  ipv4_address = var.bookstack_ip_address
+  gateway      = var.default_gateway
 
-  memory {
-    dedicated = 1024
-    swap      = 512
-  }
+  network_interface_name   = var.network_interface_name
+  network_interface_bridge = var.network_interface_bridge
+  mac_address              = var.bookstack_mac_address
 
-  network_interface {
-    name        = var.network_interface_name
-    bridge      = var.network_interface_bridge
-    mac_address = var.bookstack_mac_address
-    firewall    = true
-  }
+  startup_order = var.bookstack_startup_order
 
-  startup {
-    order = var.bookstack_startup_order
-  }
+  disk_datastore_id = "VM-Disks"
+  disk_size         = 20
 
-  lifecycle {
-    ignore_changes = [
-      operating_system,
-      start_on_boot,
-      timeout_clone,
-      timeout_create,
-      timeout_delete,
-      timeout_update,
-    ]
-  }
+  memory_dedicated = 1024
+  memory_swap      = 512
+
+  enable_dns = false
+  #domain and DNS servers are set to use the host value
 }
-
 # -----------------------------MariaDB--------------------------------------
+module "mariadb" {
+  source = "./modules/lxc_container"
 
-resource "proxmox_virtual_environment_container" "mariadb" {
-  node_name    = var.node_name
-  vm_id        = var.mariadb_vm_id
-  unprivileged = true
-  started      = true
-  protection   = false
-
-  console {
-    enabled   = true
-    tty_count = 2
-    type      = "tty"
+  providers = {
+    proxmox = proxmox
   }
 
-  disk {
-    datastore_id = "VM-Disks"
-    size         = 10
-  }
+  node_name = var.node_name
 
-  initialization {
-    hostname = var.mariadb_hostname
+  vm_id    = var.mariadb_vm_id
+  hostname = var.mariadb_hostname
 
-    ip_config {
-      ipv4 {
-        address = var.mariadb_ip_address
-        gateway = var.default_gateway
-      }
-    }
-    dns {
-      domain  = var.domain_name
-      servers = var.dns_servers #DNS server
-    }
-  }
+  ipv4_address = var.mariadb_ip_address
+  gateway      = var.default_gateway
 
-  memory {
-    dedicated = 512
-    swap      = 0
-  }
+  network_interface_name   = var.network_interface_name
+  network_interface_bridge = var.network_interface_bridge
+  mac_address              = var.mariadb_mac_address
 
-  network_interface {
-    name        = var.network_interface_name
-    bridge      = var.network_interface_bridge
-    mac_address = var.mariadb_mac_address
-    firewall    = true
-  }
+  startup_order = var.mariadb_startup_order
 
-  startup {
-    order = var.mariadb_startup_order
-  }
+  disk_datastore_id = "VM-Disks"
+  disk_size         = 10
 
-  lifecycle {
-    ignore_changes = [
-      operating_system,
-      start_on_boot,
-      timeout_clone,
-      timeout_create,
-      timeout_delete,
-      timeout_update,
-    ]
-  }
+  memory_dedicated = 512
+  memory_swap      = 0
+
+  enable_dns  = true
+  dns_domain  = var.domain_name
+  dns_servers = var.dns_servers
 }
-
 # ----------------------------nginx Container---------------------------------------
+module "nginx" {
+  source = "./modules/lxc_container"
 
-resource "proxmox_virtual_environment_container" "nginx" {
-  node_name    = var.node_name
-  vm_id        = var.nginx_vm_id
-  unprivileged = true
-  started      = true
-  protection   = false
-
-  console {
-    enabled   = true
-    tty_count = 2
-    type      = "tty"
+  providers = {
+    proxmox = proxmox
   }
 
-  disk {
-    datastore_id = "VM-Disks"
-    size         = 5
-  }
+  node_name = var.node_name
 
-  initialization {
-    hostname = var.nginx_hostname
+  vm_id    = var.nginx_vm_id
+  hostname = var.nginx_hostname
 
-    ip_config {
-      ipv4 {
-        address = var.nginx_ip_address
-        gateway = var.default_gateway
-      }
-    }
-    dns {
-      domain  = var.domain_name
-      servers = var.dns_servers #DNS server
-    }
-  }
+  ipv4_address = var.nginx_ip_address
+  gateway      = var.default_gateway
 
-  memory {
-    dedicated = 384
-    swap      = 0
-  }
+  network_interface_name   = var.network_interface_name
+  network_interface_bridge = var.network_interface_bridge
+  mac_address              = var.nginx_mac_address
 
-  network_interface {
-    name        = var.network_interface_name
-    bridge      = var.network_interface_bridge
-    mac_address = var.nginx_mac_address
-    firewall    = true
-  }
+  startup_order = var.nginx_startup_order
 
-  startup {
-    order = var.nginx_startup_order
-  }
+  disk_datastore_id = "VM-Disks"
+  disk_size         = 5
 
-  lifecycle {
-    ignore_changes = [
-      operating_system,
-      start_on_boot,
-      timeout_clone,
-      timeout_create,
-      timeout_delete,
-      timeout_update,
-    ]
-  }
+  memory_dedicated = 384
+  memory_swap      = 0
+
+  enable_dns  = true
+  dns_domain  = var.domain_name
+  dns_servers = var.dns_servers
 }

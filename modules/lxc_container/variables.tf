@@ -30,3 +30,23 @@ variable "dns_servers" {
   default = []
 }
 
+#(MongoDB has a CPU block. Others can ignore it)
+variable "enable_cpu" {
+  type    = bool
+  default = false
+}
+
+variable "cpu_architecture" {
+  type    = string
+  default = "amd64"
+}
+
+variable "cpu_cores" {
+  type    = number
+  default = 1
+}
+
+variable "cpu_units" {
+  type    = number
+  default = 1024
+}

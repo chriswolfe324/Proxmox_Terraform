@@ -35,6 +35,15 @@ resource "proxmox_virtual_environment_container" "container" {
     }
   }
 
+  dynamic "cpu" {
+    for_each = var.enable_cpu ? [1] : []
+    content {
+      architecture = var.cpu_architecture
+      cores        = var.cpu_cores
+      units        = var.cpu_units
+    }
+  }
+
   memory {
     dedicated = var.memory_dedicated
     swap      = var.memory_swap
