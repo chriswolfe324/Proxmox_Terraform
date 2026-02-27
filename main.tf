@@ -2,7 +2,9 @@
 # until you decide to set up the firewall later
 
 # ----------------------------Jellyfin and Samba Server---------------------------------------
-resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
+module "jellyfin_samba" {
+  source          = "./modules/virtual_machines"
+
   node_name       = var.node_name
   vm_id           = var.jellyfin_samba_vm_id
   name            = var.jellyfin_samba_hostname
@@ -90,7 +92,9 @@ resource "proxmox_virtual_environment_vm" "jellyfin_samba" {
   }
 }
 # ---------------------------Home Assistant Server----------------------------------------
-resource "proxmox_virtual_environment_vm" "home_assistant" {
+module "home_assistant" {
+  source    = "./modules/virtual_machines"
+
   node_name = var.node_name
   vm_id     = var.home_assistant_vm_id
   name      = var.home_assistant_hostname
