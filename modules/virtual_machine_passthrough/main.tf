@@ -95,4 +95,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
       uuid = smbios.value.uuid
     }
   }
+
+    lifecycle {
+    ignore_changes = [
+      disk[1],
+      disk[2],
+    ]
+  }
 }

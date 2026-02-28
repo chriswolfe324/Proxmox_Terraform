@@ -3,7 +3,7 @@
 
 # ----------------------------Jellyfin and Samba Server---------------------------------------
 module "jellyfin_samba" {
-  source          = "./modules/virtual_machines"
+  source = "./modules/virtual_machine_passthrough"
 
   node_name       = var.node_name
   vm_id           = var.jellyfin_samba_vm_id
@@ -11,28 +11,26 @@ module "jellyfin_samba" {
   keyboard_layout = "en-us"
   description     = "You also have iperf installed on this VM."
 
-  # network info configured inside the VM
-
-  startup {
+  startup = {
     order = var.jellyfin_samba_startup_order
   }
 
-  agent {
+  agent = {
     enabled = true
     type    = "virtio"
   }
 
-  operating_system {
+  operating_system = {
     type = "l26"
   }
 
-  cpu {
+  cpu = {
     sockets = 1
     cores   = 2
     type    = "x86-64-v2-AES"
   }
 
-  memory {
+  memory = {
     dedicated = 2560
     floating  = 1024
   }
@@ -40,37 +38,39 @@ module "jellyfin_samba" {
   scsi_hardware = "virtio-scsi-single"
   boot_order    = ["scsi0", "ide2", "net0"]
 
-  disk {
-    datastore_id = "local-lvm"
-    interface    = "scsi0"
-    size         = 30
-    discard      = "on"
-    iothread     = true
-  }
+  disks = [
+    {
+      datastore_id = "local-lvm"
+      interface    = "scsi0"
+      size         = 30
+      discard      = "on"
+      iothread     = true
+    },
+    {
+      interface         = "scsi1"
+      path_in_datastore = "/dev/disk/by-id/ata-TOSHIBA_HDWD130_584M35XAS"
+      backup            = false
+    },
+    {
+      interface         = "scsi2"
+      path_in_datastore = "/dev/disk/by-id/ata-TOSHIBA_HDWD130_584M33WAS"
+      backup            = false
+    },
+  ]
 
-  disk {
-    interface         = "scsi1"
-    path_in_datastore = "/dev/disk/by-id/ata-TOSHIBA_HDWD130_584M35XAS"
-    backup            = false
-  }
-
-  disk {
-    interface         = "scsi2"
-    path_in_datastore = "/dev/disk/by-id/ata-TOSHIBA_HDWD130_584M33WAS"
-    backup            = false
-  }
-
-  cdrom {
+  cdrom = {
     interface = "ide2"
     file_id   = "none"
   }
 
-  network_device {
-    bridge      = var.network_interface_bridge
-    mac_address = var.jellyfin_samba_mac_address
-    model       = "virtio"
-    firewall    = true
-  }
+  network_devices = [
+    {
+      bridge      = var.network_interface_bridge
+      mac_address = var.jellyfin_samba_mac_address
+      model       = "virtio"
+      firewall    = true
+    }
+  ]
 
   on_boot       = true
   bios          = "seabios"
@@ -80,76 +80,72 @@ module "jellyfin_samba" {
   hotplug       = "disk,network,usb"
   protection    = false
 
-  smbios {
+  smbios = {
     uuid = "3de28b5a-aef3-4856-9aee-6627dd298b32"
   }
-
-  lifecycle {
-    ignore_changes = [
-      disk[1], # ignoring my passed-through drive
-      disk[2], # ignoring my passed-through drive
-    ]
-  }
 }
+
 # ---------------------------Home Assistant Server----------------------------------------
 module "home_assistant" {
-  source    = "./modules/virtual_machines"
+  source = "./modules/virtual_machine"
 
   node_name = var.node_name
   vm_id     = var.home_assistant_vm_id
   name      = var.home_assistant_hostname
 
-  # network info configured inside the VM
-
-  startup {
+  startup = {
     order = var.home_assistant_startup_order
   }
 
-  agent {
+  agent = {
     enabled = false
   }
 
-  operating_system {
+  operating_system = {
     type = "l26"
   }
 
-  cpu {
+  cpu = {
     sockets = 1
     cores   = 2
     type    = "x86-64-v2-AES"
   }
 
-  memory {
+  memory = {
     dedicated = 3072
   }
 
   scsi_hardware = "virtio-scsi-single"
   boot_order    = ["scsi0"]
 
-  disk {
-    datastore_id = "local-lvm"
-    interface    = "scsi0"
-    size         = 32
-    discard      = "on"
-    iothread     = true
-  }
+  disks = [
+    {
+      datastore_id = "local-lvm"
+      interface    = "scsi0"
+      size         = 32
+      discard      = "on"
+      iothread     = true
+    }
+  ]
 
-  efi_disk {
+  efi_disk = {
     datastore_id = "local-lvm"
     type         = "4m"
   }
 
-  cdrom {
+  cdrom = {
     interface = "ide2"
     file_id   = "none"
   }
 
-  network_device {
-    bridge      = var.network_interface_bridge
-    mac_address = var.home_assistant_mac_address
-    model       = "virtio"
-    firewall    = true
-  }
+  network_devices = [
+    {
+      bridge      = var.network_interface_bridge
+      mac_address = var.home_assistant_mac_address
+      model       = "virtio"
+      firewall    = true
+    }
+  ]
 
   on_boot       = true
   bios          = "ovmf"
@@ -159,10 +155,11 @@ module "home_assistant" {
   hotplug       = "disk,network,usb"
   protection    = false
 
-  smbios {
+  smbios = {
     uuid = "8db76472-6fd0-45dd-a950-6e963b283f7c"
   }
 }
+
 # ----------------------------Pi-Hole Container---------------------------------------
 module "pihole" {
   source = "./modules/lxc_container"
