@@ -25,6 +25,4 @@ crash.*.log
 .DS_Store
 Thumbs.db
 # -----------------------------
-# Optional: lock file
-.terraform.lock.hcl
-# -----------------------------
+
